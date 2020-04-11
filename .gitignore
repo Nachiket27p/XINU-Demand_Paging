@@ -1,0 +1,7 @@
+.vscode-server/
+.pki/
+.cache/
+.bashrc
+.bash_profile
+.bash_logout
+.bash_history
