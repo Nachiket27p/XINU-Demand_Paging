@@ -8,12 +8,15 @@ int get_bs(bsd_t bs_id, unsigned int npages)
 	STATWORD ps;
     disable(ps);
 
+    // check if the page number is valid or not 
+    // check if the bacing store id is valid or not
     if(bad_bs_npage(npages) || bad_bs_id(bs_id))
     {
         restore(ps);
         return SYSERR;
     }
 
+    // get the backing store entry from the table
 	bs_map_t *bsptr = &bsm_tab[bs_id];
 
 	// update this processes pid that it has this store mapped

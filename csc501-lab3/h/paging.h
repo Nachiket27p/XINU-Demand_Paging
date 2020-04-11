@@ -59,7 +59,7 @@ typedef struct{
   int fr_refcnt;			/* reference count		*/
   int fr_type;				/* FR_DIR, FR_TBL, FR_PAGE	*/
   int fr_dirty;
-}fr_map_t;
+} fr_map_t;
 
 extern bs_map_t bsm_tab[];
 extern fr_map_t frm_tab[];
@@ -75,42 +75,41 @@ SYSCALL release_bs(bsd_t);
 SYSCALL read_bs(char *, bsd_t, int);
 SYSCALL write_bs(char *, bsd_t, int);
 
-#define NBPG		4096	/* number of bytes per page	*/
+#define NBPG		  4096	/* number of bytes per page	*/
 #define FRAME0		1024	/* zero-th frame		*/
 #define NFRAMES 	1024	/* number of frames		*/
 
 #define BSM_UNMAPPED	0
-#define BSM_MAPPED	1
+#define BSM_MAPPED	  1
 
 #define FRM_UNMAPPED	0
-#define FRM_MAPPED	1
+#define FRM_MAPPED	  1
 
 #define FR_PAGE		0
 #define FR_TBL		1
 #define FR_DIR		2
 
-#define SC 3
-#define FIFO 4
-#define LFU 5
+#define SC    3
+#define FIFO  4
+#define LFU   5
 
-#define BACKING_STORE_BASE	0x00800000
+#define BACKING_STORE_BASE    	0x00800000
 #define BACKING_STORE_UNIT_SIZE 0x00080000
+#define MAXUINT                 0xffffffff
 
-#define BVPN 4096
-#define NBS 16
-
-#define MAXUINT 0xffffffff
+#define BVPN  4096
+#define NBS   16
 #define NOVAL -1
 
-// macro to check if page number is valid
-#define bad_bs_npage(x)	((x) <= 0 || (x) > 128)
-#define bad_bs_id(id)   ((id) < 0 || (id) >= NBS)
-#define bad_frame_numb(fn)  ((fn) < 0 || (fn) >= NFRAMES)
-
-#define NGPT 4      // number of global page tables
-#define PF_XNUM 14  // interrupt descriptor number
-#define BS_PRIV 1   // to indicate backing store is private
+#define NGPT      4      // number of global page tables
+#define PF_XNUM   14  // interrupt descriptor number
+#define BS_PRIV   1   // to indicate backing store is private
 #define BS_SHARED 0 // to indicate backing store is shared
 
+// macro to check if page number is valid
+#define bad_bs_npage(x)	    ((x) <= 0 || (x) > 128)
+#define bad_bs_id(id)       ((id) < 0 || (id) >= NBS)
+#define bad_frame_numb(fn)  ((fn) < 0 || (fn) >= NFRAMES)
+
+extern int debugging;
 extern int page_replace_policy;
-extern int debugging_mode;

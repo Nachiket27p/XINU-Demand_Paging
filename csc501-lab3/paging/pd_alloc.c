@@ -4,6 +4,12 @@
 #include <proc.h>
 #include <paging.h>
 
+/*
+ * Allocated the page directory for a given process by locating a 
+ * free frame or replacing one using SC or LFU policy.
+ *
+ * pid - process id of the process for which the page directory is allocated
+ */
 void pd_alloc(int pid)
 {
 	STATWORD ps;

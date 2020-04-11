@@ -16,41 +16,57 @@ SYSCALL	vfreemem(block, size)
 	unsigned size;
 {
 	STATWORD ps;
-	struct mblock *p,*q;
-	unsigned top;
-
-	// checking for possible error conditions 
-	if (block < BVPN * NBPG || size == 0){
-		kprintf("ERROR in vfreemem: block size exceeds the allowed size.\n");
-		return SYSERR;
-	}
 	disable(ps);
 
-	for( p=proctab[currpid].vmemlist->mnext,q=proctab[currpid].vmemlist;
-	     p != (struct mblock *) NULL && p < block ;
-	     q=p,p=p->mnext )
-		;
-	
-	if (((top=q->mlen+(unsigned)q)>(unsigned)block && q!= proctab[currpid].vmemlist) ||
-	    (p!=NULL && (size+(unsigned)block) > (unsigned)p )) {
+	size = (unsigned)roundmb(size);
+
+	// if the block requested to free is out invalid or
+	// if the size of 0 than return SYSERR
+	if(block < BVPN * NBPG || !size)
+	{
 		restore(ps);
-		return(SYSERR);
+		return SYSERR;
 	}
 
-	if ( q!= proctab[currpid].vmemlist && top == (unsigned)block )
-			q->mlen += size;
-	else {
+	struct pentry *pptr = &proctab[currpid];
+	
+	struct mblock *vhCurr = pptr->vmemlist;
+	struct mblock *vhNext = pptr->vmemlist->mnext;
+
+	// Traverse through the list of virtual heap and locate the
+	// next free slot
+	while(vhNext != (struct mblock *)NULL && vhNext < block)
+	{
+		vhCurr = vhNext;
+		vhNext = vhNext->mnext;
+	}
+
+	// if the next slot is the vmemlist head or if the next
+	// is not null or the block + size is greater then
+	// the next next heap than return syserr
+	unsigned top = vhCurr->mlen + (unsigned)vhCurr;
+
+	// make sure the block is being placed at the correct position in the list
+	if((top > (unsigned)block && vhCurr != pptr->vmemlist) ||
+		(vhNext != (struct mblock *)NULL && ((unsigned)block + size) > (unsigned)vhNext))
+	{
+		restore(ps);
+		return SYSERR;
+	}
+
+	// update the virtual heap list to accomodate the freed
+	// virtual heap block
+	if(vhCurr != pptr->vmemlist && top == (unsigned)block)
+	{
+		vhCurr->mlen = size;
+	}
+	else
+	{
 		block->mlen = size;
-		block->mnext = p;
-		q->mnext = block;
-		q = block;
+		block->mnext = vhNext;
+		vhCurr->mnext = block;
+		vhCurr = block;
 	}
 
-	if ( (unsigned)( q->mlen + (unsigned)q ) == (unsigned)p) {
-		q->mlen += p->mlen;
-		q->mnext = p->mnext;
-	}
-
-	restore(ps);
 	return(OK);
 }

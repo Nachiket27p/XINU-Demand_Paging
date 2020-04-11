@@ -51,8 +51,7 @@ int	console_dev;		/* the console device			*/
 bs_map_t bsm_tab[NBS];
 fr_map_t frm_tab[NFRAMES];
 fr_q_node frm_queue[NFRAMES + 2];
-
-int debugging_mode = 0;
+int debugging = 0;
 int page_replace_policy = SC;
 
 
@@ -231,28 +230,31 @@ sysinit()
 	pt_t *ptptr;
 	pd_t *pdptr;
 	
+	// Initialize the 4 global page tables by requesting
+	//4 feames in which to place the global page tables
 	for(i = 0; i < 4; i++)
 	{
 		get_frm(&fn);
 		frm_tab[fn].fr_status = FRM_MAPPED;
 		frm_tab[fn].fr_pid = NULLPROC;
 		frm_tab[fn].fr_type = FR_TBL;
+
 		ptptr = (FRAME0 + fn) * NBPG;
 
 		for(j = 0; j < NFRAMES; j++)
 		{
-			ptptr->pt_pres = 1;	
-			ptptr->pt_write = 1;
-			ptptr->pt_user = 0;
-			ptptr->pt_pwt = 0;
-			ptptr->pt_pcd = 0;
-			ptptr->pt_acc = 0;
-			ptptr->pt_dirty = 0;
-			ptptr->pt_mbz = 0;
-			ptptr->pt_global = 1;
-			ptptr->pt_avail = 0;
-			ptptr->pt_base = i*FRAME0 + j;	
-			ptptr++;
+			(ptptr+j)->pt_pres = 1;	
+			(ptptr+j)->pt_write = 1;
+			(ptptr+j)->pt_user = 0;
+			(ptptr+j)->pt_pwt = 0;
+			(ptptr+j)->pt_pcd = 0;
+			(ptptr+j)->pt_acc = 0;
+			(ptptr+j)->pt_dirty = 0;
+			(ptptr+j)->pt_mbz = 0;
+			(ptptr+j)->pt_global = 1;
+			(ptptr+j)->pt_avail = 0;
+			(ptptr+j)->pt_base = (i * FRAME0) + j;
+			// ptptr++;
 		}
 	}
 

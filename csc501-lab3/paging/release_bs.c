@@ -3,6 +3,14 @@
 #include <proc.h>
 #include <paging.h>
 
+/*
+ * Releases a backing store, if multiple processes are mapped to backing store
+ * than the bakcing store is not freed, just released for this process.
+ * If no other processes will be using the backing store after this release
+ * than free the backing store.
+ *
+ * bs_id - backing store id
+ */
 SYSCALL release_bs(bsd_t bs_id)
 {
 	/* release the backing store with ID bs_id */
@@ -20,7 +28,7 @@ SYSCALL release_bs(bsd_t bs_id)
         return SYSERR;
     }
 
-
+    // if the backing store is privat than kist free the backing store
 	if(bsptr->bs_priv == BS_PRIV)
     {
         free_bsm(bs_id);

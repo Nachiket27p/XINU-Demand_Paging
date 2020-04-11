@@ -30,24 +30,43 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 {
 	STATWORD ps;
 	disable(ps);
-	int pid,bs_store;
-	pid = create(procaddr, ssize, priority, name, nargs, args);
+
+	int pid, bs;
 	
 	//check if a particular backing store can be acquired
-	if(get_bsm(&bs_store) == SYSERR)
+	if(get_bsm(&bs) == SYSERR)
+	{
+		restore(ps);
 		return SYSERR;
+	}
 
-	//calling bsm_map as no error conditions found true
-	bsm_map(pid, BVPN, bs_store, hsize);
+	pid = create(procaddr, ssize, priority, name, nargs, args);
 	
-	proctab[pid].store = bs_store;
-	proctab[pid].vhpno = BVPN;
-	proctab[pid].vhpnpages = hsize;
-	proctab[pid].vmemlist->mnext = BVPN * NBPG;
-	struct mblock *base;
-	base = BACKING_STORE_BASE + (bs_store * BACKING_STORE_UNIT_SIZE);
-	base->mlen = hsize * NBPG;
-	base->mnext = NULL;
+	// if the process could not be created than return syserr
+	if(pid == SYSERR)
+	{
+		restore(ps);
+		return SYSERR;
+	}
+
+	// map the backing store located at the 'bs' entry in the
+	// backing store table
+	bsm_map(pid, BVPN, bs, hsize);
+
+	// get pointer to the process table entry
+	struct pentry *pptr = &proctab[pid];
+
+	// pptr->store = bs;
+	// pptr->vhpno = BVPN;
+	pptr->vhpnpages = hsize;
+	pptr->vmemlist->mnext = BVPN * NBPG;
+	
+	// get pointer to the memory block for this process
+	struct mblock *mblk;
+	
+	mblk = BACKING_STORE_BASE + (bs * BACKING_STORE_UNIT_SIZE);
+	mblk->mlen = hsize * NBPG;
+	mblk->mnext = NULL;
 
 	restore(ps);
 	return pid;

@@ -65,8 +65,8 @@ SYSCALL pfint()
 	pt_t *ptptr = (pt_t*)((pdptr->pd_base * NBPG) + (ptOffset * sizeof(pt_t)));
 	
 	int newFr, pgOffset, bs_number;
-	// If a page table is not present than get a new frame an
-	// initialize the frame
+
+	// If a page table is not present than get a new frame an initialize the frame
 	if(ptptr->pt_pres == 0)
 	{
 		get_frm(&newFr);
@@ -95,6 +95,7 @@ SYSCALL pfint()
 		}
 	}
 
+	// write the pdbr into control register 3
 	write_cr3(pdbr);
 	
 	restore(ps);

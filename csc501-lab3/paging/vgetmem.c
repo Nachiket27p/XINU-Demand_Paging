@@ -14,38 +14,54 @@ extern struct pentry proctab[];
 WORD	*vgetmem(nbytes)
 	unsigned nbytes;
 {
-
 	STATWORD ps;
-	
-	struct pentry *pptr = &proctab[currpid];
-	struct	mblock	*p, *q, *leftover;
-
 	disable(ps);
-	if (nbytes==0 || pptr->vmemlist->mnext== (struct mblock *) NULL) {
-		kprintf("ERROR in vgetmem: Zero bytes requested.\n");
+
+	// get pointer to process table entry
+	struct pentry *pptr = &proctab[currpid];
+
+	if(pptr->vmemlist->mnext == (struct mblock*)NULL || nbytes <= 0)
+	{
 		restore(ps);
-		return( (WORD *)SYSERR);
+		return SYSERR;
 	}
 
-	nbytes = (unsigned int) roundmb(nbytes);
-	for (q= &pptr->vmemlist,p=pptr->vmemlist->mnext ;
-	     p != (struct mblock *) NULL ;
-	     q=p,p=p->mnext)
-		if ( p->mlen == nbytes) {
-			q->mnext = p->mnext;
+	// round or truncate address up to size of mblock
+	nbytes = (u_int) roundmb(nbytes);
+
+	struct mblock *tmp;
+
+	struct mblock *vhCurr = pptr->vmemlist;
+	struct mblock *vhNext = pptr->vmemlist->mnext;
+
+	// Traverse through the list of virtual heap to find a free slot
+	while(vhNext != (struct mblock *)NULL)
+	{
+		// Is the next block has the the required nbytes
+		// return the pointer
+		if(vhNext->mlen == nbytes)
+		{
+			vhCurr->mnext = vhNext->mnext;
 			restore(ps);
-			return( (WORD *)p );
-		} else if ( p->mlen > nbytes ) {
-			leftover = (struct mblock *)( (unsigned)p + nbytes );
-			q->mnext = leftover;
-			leftover->mnext = p->mnext;
-			leftover->mlen = p->mlen - nbytes;
+			return (WORD *)vhNext;
+		}
+		else if(vhNext->mlen > nbytes)
+		{
+			tmp = (struct mblock *)((unsigned)vhNext + nbytes);
+			vhCurr->mnext = tmp;
+			tmp->mnext = vhNext->mnext;
+			tmp->mlen = vhNext->mlen - nbytes;
 			restore(ps);
-			return( (WORD *)p );
+			return (WORD *)vhNext;
 		}
 
+		vhCurr = vhNext;
+		vhNext = vhNext->mnext;
+	}
+
+	// if no place could be found in the virtual heap return SYSERR
 	restore(ps);
-	return( (WORD *)SYSERR );
+	return (WORD *)SYSERR;
 }
 
 

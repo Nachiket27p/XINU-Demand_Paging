@@ -205,9 +205,6 @@ SYSCALL bsm_unmap(int pid, int vpno, int flag)
         return SYSERR;
     }
 
-	// get the virtual address
-    u_long vAddr = vpno*NBPG;
-
     int i, store, pageth;
 
 	fr_map_t *frptr;
@@ -216,10 +213,11 @@ SYSCALL bsm_unmap(int pid, int vpno, int flag)
     for(i = 0; i < NFRAMES; i++)
     {
 		frptr = &frm_tab[i];
+        // also not sure if i need to check "fr_dirty" or "pt_dirty" to write out to backing store
         if(frptr->fr_pid == pid && frptr->fr_type == FR_PAGE && frptr->fr_dirty)
         {
-            bsm_lookup(pid, vAddr, &store, &pageth);
-            write_bs( (i+NFRAMES)*NBPG, store, pageth);
+            bsm_lookup(pid, vpno * NBPG, &store, &pageth);
+            write_bs( (i + NFRAMES) * NBPG, store, pageth);
         }
     }
 
@@ -232,6 +230,9 @@ SYSCALL bsm_unmap(int pid, int vpno, int flag)
 	bsptr->bs_npages = 0;
 	// bsptr->bs_sem = 0;
 	bsptr->bs_priv = 0;
+
+    // remove the tracker from this processes process table entry
+    proctab[pid].store &= (!((u_int)1 << store));
         
     restore(ps);
     return OK;
