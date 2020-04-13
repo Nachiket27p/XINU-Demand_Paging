@@ -7,6 +7,8 @@
 
 LOCAL SYSCALL sc_replacement_policy();
 LOCAL SYSCALL lfu_replacement_policy();
+SYSCALL free_frm(int i);
+
 int frm_head;
 int frm_tail;
 
@@ -119,23 +121,23 @@ SYSCALL free_frm(int i)
 		pdptr = pdbr + (pdOffset * sizeof(pd_t));
 		ptptr = (pdptr->pd_base * NBPG) + (ptOffset * sizeof(pt_t));
 
-        int bStore;
-        // locate the correct backing store for this frame so if it needs to be written back
-        // to the backing store its written to the correct backin store because 
-        // a process can have multiple multiple backing stores
-        for(bStore = 0; bStore < NBS; bStore++)
-        {
-            if(((proctab[frptr->fr_pid].store >> bStore) & (u_int)1) &&
-                (frptr->fr_vpno >= bsm_tab[bStore].bs_vpno &&
-                    frptr->fr_vpno < (bsm_tab[bStore].bs_vpno + BACKING_STORE_UNIT_SIZE) ))
-            {
-                break;
-            }
-        }
-        
-		// bStore = proctab[frptr->fr_pid].store;
-		
-        pn = frptr->fr_vpno-proctab[fppid].vhpno;
+        // // locate the correct backing store for this frame so if it needs to be written back
+        // // to the backing store its written to the correct backin store because 
+        // // a process can have multiple multiple backing stores
+        // for(bStore = 0; bStore < NBS; bStore++)
+        // {
+        //     if(((proctab[frptr->fr_pid].store >> bStore) & (u_int)1) &&
+        //         (frptr->fr_vpno >= bsm_tab[bStore].bs_vpno &&
+        //             frptr->fr_vpno < (bsm_tab[bStore].bs_vpno + BACKING_STORE_UNIT_SIZE) ))
+        //     {
+        //         break;
+        //     }
+        // }
+		// // bStore = proctab[frptr->fr_pid].store;
+        // pn = frptr->fr_vpno - proctab[fppid].vhpno;
+
+        // use bsm_lookup to get the correct backins store and the pageth
+        bsm_lookup(currpid, virtAddr, &bStore, &pn);
 		
 		if(bad_frame_numb(i))
 		{
@@ -145,8 +147,10 @@ SYSCALL free_frm(int i)
 // ???????????????????????
 // not sure i need to check fr_dirty or pt_dirty
 		// if the frame is dirty write back to backing store
-		if(frptr->fr_dirty)
+		if(ptptr->pt_dirty || frptr->fr_dirty)
 		{
+            ptptr->pt_dirty = 0;
+            frptr->fr_dirty = 0;
 			write_bs((i + FRAME0) * NBPG, bStore, pn);
 		}
 
@@ -162,11 +166,11 @@ SYSCALL free_frm(int i)
 		{
 			if(page_replace_policy == LFU)
             {
-				// TODO
+				// TODO?
 			}
 			else if(page_replace_policy == SC)
             {
-				// TODO
+				// TODO?
 			}
 			frptr->fr_pid = NOVAL;
 			frptr->fr_status = FRM_UNMAPPED;

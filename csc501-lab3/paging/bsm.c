@@ -128,7 +128,11 @@ SYSCALL bsm_lookup(int pid, long vaddr, int* store, int* pageth)
         // check if the bitmas has the correct bit set for this pid
         
         // if(bsptr->bs_pid == pid)
-		if((bsptr->bs_pid_track >> pid) & (u_llong)1)
+        // check this backing store is mapped to this process, also
+        // because cultiple backing stores can be mapped to a single process
+        // find the correct backing store by checking the vaddr.
+		if(((bsptr->bs_pid_track >> pid) & (u_llong)1) && 
+            ((((bsptr->bs_vpno + bsptr->bs_npages) * NBPG) >= vaddr) && (bsptr->bs_vpno * NBPG < vaddr)))
         {
 			*store = i;
 			// provide the page
@@ -206,6 +210,13 @@ SYSCALL bsm_unmap(int pid, int vpno, int flag)
     }
 
     int i, store, pageth;
+    
+    // used to check gat a pointer to the page entry
+    // to check if the page is dirty and needs to be written
+    // back to backing store.
+    virt_addr_t *virtAddr;
+    pd_t *pdptr;
+    pt_t *ptptr;
 
 	fr_map_t *frptr;
 	// iterate through all the frames for this backing store and
@@ -213,9 +224,18 @@ SYSCALL bsm_unmap(int pid, int vpno, int flag)
     for(i = 0; i < NFRAMES; i++)
     {
 		frptr = &frm_tab[i];
+        
+        virtAddr = (virt_addr_t *)(&(frptr->fr_vpno));
+        pdptr =  proctab[pid].pdbr + (virtAddr->pd_offset * sizeof(pd_t));
+        ptptr = (pdptr->pd_base * NBPG) + (virtAddr->pt_offset * sizeof(pt_t));
+
         // also not sure if i need to check "fr_dirty" or "pt_dirty" to write out to backing store
-        if(frptr->fr_pid == pid && frptr->fr_type == FR_PAGE && frptr->fr_dirty)
+        if(frptr->fr_pid == pid && frptr->fr_type == FR_PAGE && (ptptr->pt_dirty || frptr->fr_dirty))
         {
+            // reset the dirty bit 
+            ptptr->pt_dirty = 0;
+            frptr->fr_dirty = 0;
+            // look up the bakcing store
             bsm_lookup(pid, vpno * NBPG, &store, &pageth);
             write_bs( (i + NFRAMES) * NBPG, store, pageth);
         }
