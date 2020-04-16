@@ -6,7 +6,7 @@
 
 int frm_q_head;
 int frm_q_tail;
-int SC_next_victim;
+// int SC_next_victim;
 
 /*
  * initializes the queue which keeps track of the frames
@@ -16,5 +16,5 @@ void init_frm_q()
 {
     frm_q_head = -1;
     frm_q_tail = -1;
-    SC_next_victim = -1;
+    // SC_next_victim = -1;
 }
