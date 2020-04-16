@@ -34,7 +34,7 @@ SYSCALL vcreate(procaddr,ssize,hsize,priority,name,nargs,args)
 	int pid, bs;
 	
 	//check if a particular backing store can be acquired
-	if(get_bsm(&bs) == SYSERR)
+	if(bad_bs_npage(hsize) || get_bsm(&bs) == SYSERR)
 	{
 		restore(ps);
 		return SYSERR;

@@ -144,8 +144,7 @@ SYSCALL free_frm(int i)
 			restore(ps);
 			return SYSERR;
 		}
-// ???????????????????????
-// not sure i need to check fr_dirty or pt_dirty
+
 		// if the frame is dirty write back to backing store
 		if(ptptr->pt_dirty || frptr->fr_dirty)
 		{
@@ -164,14 +163,14 @@ SYSCALL free_frm(int i)
 		
 		if(frptr->fr_refcnt == 0)
 		{
-			if(page_replace_policy == LFU)
-            {
-				// TODO?
-			}
-			else if(page_replace_policy == SC)
-            {
-				// TODO?
-			}
+            // if(page_replace_policy == LFU)
+            // {
+            //     // do nothing?
+            // }
+            // else if(page_replace_policy == SC)
+            // {
+            //     // do nothing?
+            // }
 			frptr->fr_pid = NOVAL;
 			frptr->fr_status = FRM_UNMAPPED;
 			frptr->fr_type = FR_PAGE;
@@ -255,6 +254,10 @@ LOCAL SYSCALL sc_replacement_policy()
             ptptr->pt_acc = 0;
         }
     }
+
+    // remove the frame from the queue and insert back into the end of the queue
+    remove_frm_q(frameNumb);
+    insert_frm_q(frameNumb);
 
     restore(ps);
     return frameNumb;

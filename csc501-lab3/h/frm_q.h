@@ -35,10 +35,9 @@ void init_frm_q();
  * frn - the frame id which needs to be removed from the queue
  * fn - the variable in which the removed frame id will be stored
  */
-#define remove_frm_q(frn, fn)\
+#define remove_frm_q(frn)\
     fr_q_node *fptr = &frm_queue[(frn)];\
     frm_queue[fptr->fr_prev].fr_next = fptr->fr_next;\
-    frm_queue[fptr->fr_next].fr_prev = fptr->fr_prev;\
-    fn = (frn);
+    frm_queue[fptr->fr_next].fr_prev = fptr->fr_prev;
 
 
