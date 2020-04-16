@@ -9,8 +9,9 @@ LOCAL SYSCALL sc_replacement_policy();
 LOCAL SYSCALL lfu_replacement_policy();
 SYSCALL free_frm(int i);
 
-int frm_head;
-int frm_tail;
+int SC_next_victim;
+int frm_q_head;
+// int frm_q_tail;
 
 /*-------------------------------------------------------------------------
  * init_frm - initialize frm_tab
@@ -210,17 +211,11 @@ LOCAL SYSCALL sc_replacement_policy()
     pd_t *pdptr;
 	pt_t *ptptr;
 
-    // set the current frame number to dummy/null node
-    int currFN = frm_head;
-
     // keep looking for a frame from the frame queue
     while(frameNumb == -1)
     {
-        // get the actual first node in the frame queue
-        currFN = next_frm_id_q(currFN);
-
         // get the frame virtual page number
-        frVpno = frm_tab[currFN].fr_vpno;
+        frVpno = frm_tab[SC_next_victim].fr_vpno;
 
         // cast the address of the frame number to the struct virt_addr_t
         // so that the page table offset and page directory offset can be
@@ -240,11 +235,11 @@ LOCAL SYSCALL sc_replacement_policy()
         if(ptptr->pt_acc == 0)
         {
             // set frame number to break out of the loop and return
-            frameNumb = currFN;
+            frameNumb = SC_next_victim;
             // if debugging is turned on than print the replaced frame
             if(debugging)
             {
-                kprintf("Replaced Frame: 0x%08x\n", frameNumb);
+                kprintf("Replaced Frame: %d\n", frameNumb);
             }
         }
         else
@@ -253,11 +248,10 @@ LOCAL SYSCALL sc_replacement_policy()
             // clear the reference so that next time it can be replaced
             ptptr->pt_acc = 0;
         }
-    }
 
-    // remove the frame from the queue and insert back into the end of the queue
-    remove_frm_q(frameNumb);
-    insert_frm_q(frameNumb);
+        // move the next victim pointer along the circular queue
+        mv_to_nxt_SC_victim();
+    }
 
     restore(ps);
     return frameNumb;
@@ -294,7 +288,7 @@ LOCAL SYSCALL lfu_replacement_policy()
     // if debugging is turned on than print the replaced frame
     if(debugging)
     {
-        kprintf("Replaced Frame: 0x%08x\n", currFN);
+        kprintf("Replaced Frame: %d\n", currFN);
     }
 
     restore(ps);

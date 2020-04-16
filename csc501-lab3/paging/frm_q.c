@@ -4,8 +4,9 @@
 #include <paging.h>
 #include <frm_q.h>
 
-int frm_head;
-int frm_tail;
+int frm_q_head;
+int frm_q_tail;
+int SC_next_victim;
 
 /*
  * initializes the queue which keeps track of the frames
@@ -13,11 +14,7 @@ int frm_tail;
  */
 void init_frm_q()
 {
-    frm_head = NFRAMES;
-    frm_tail = NFRAMES + 1;
-    frm_queue[frm_head].fr_next = frm_tail;
-    frm_queue[frm_head].fr_prev = -1;
-    frm_queue[frm_tail].fr_prev = frm_head;
-    frm_queue[frm_tail].fr_next = -1;
+    frm_q_head = -1;
+    frm_q_tail = -1;
+    SC_next_victim = -1;
 }
-

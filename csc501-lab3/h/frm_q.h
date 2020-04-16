@@ -1,43 +1,75 @@
-/* frm_q.h */
+/* frm_q.h - A circular queue which is used for Second Chance replacement policy*/
 
 // struct to keep track of frames for replacement policy
 typedef struct {
-    int fr_next;
-    int fr_prev;
+    int frq_next;
 } fr_q_node;
 
 // extern variables
 extern fr_q_node frm_queue[];
-extern int frm_head;
-extern int frm_tail;
+extern int frm_q_head;
+extern int frm_q_tail;
+extern int SC_next_victim;
 
 void init_frm_q();
 
+/* ------------------------------------------------------- */
+/*                  Inlined functions                      */
+/* ------------------------------------------------------- */
 
-// inlined functions
-#define first_frm_id_q(fqhead) frm_queue[(fqhead)].fr_next
-#define last_frm_id_q(fqtail) frm_queue[(fqtail)].fr_prev
-#define next_frm_id_q(curr) frm_queue[(curr)].fr_next
-#define isEmpty_frm_q frm_queue[frm_head].fr_next == frm_tail
+#define frmq_first_id(fqhead) frm_queue[(fqhead)].frq_next
+#define frmq_next_id(curr) frm_queue[(curr)].frq_next
+#define frmq_isEmpty() (frm_q_head == -1 && frm_q_tail == -1)
 
 /*
  * Inserts the fn into the tail end of the queue
  * fn - the frame which needs to be inserted into the queue
  */
-#define insert_frm_q(fn)\
-    frm_queue[fn].fr_prev = frm_queue[frm_tail].fr_prev;\
-    frm_queue[frm_queue[frm_tail].fr_prev].fr_next = fn;\
-    frm_queue[fn].fr_next = frm_tail;\
-    frm_queue[frm_tail].fr_prev = fn;
+#define frmq_insert(fn)\
+    if(frm_q_head == -1)\
+    {\
+        frm_q_head = (fn);\
+        frm_q_tail = (fn);\
+        frm_queue[(fn)].frq_next = (fn);\
+        SC_next_victim = (fn);\
+    }\
+    else\
+    {\
+        frm_queue[frm_q_tail].frq_next = (fn);\
+        frm_queue[(fn)].frq_next = frm_q_head;\
+        frm_q_tail = (fn);\
+    }
 
 /*
  * Removes teh frame (frm) from the queue
  * frn - the frame id which needs to be removed from the queue
  * fn - the variable in which the removed frame id will be stored
  */
-#define remove_frm_q(frn)\
-    fr_q_node *fptr = &frm_queue[(frn)];\
-    frm_queue[fptr->fr_prev].fr_next = fptr->fr_next;\
-    frm_queue[fptr->fr_next].fr_prev = fptr->fr_prev;
+#define frmq_remove(prevfrn)\
+    if(frm_queue[(prevfrn)].frq_next == (prevfrn))\
+    {\
+        frm_q_head = -1;\
+        frm_q_tail = -1;\
+        SC_next_victim = -1;\
+    }\
+    else\
+    {\
+        int toRmv = frm_queue[(prevfrn)].frq_next;\
+        if(toRmv == frm_q_head)\
+        {\
+            frm_q_head = frm_queue[toRmv].frq_next;\
+        }\
+        else if(toRmv == frm_q_tail)\
+        {\
+            frm_q_tail = frm_queue[toRmv].frq_next;\
+        }\
+        if(toRmv == SC_next_victim)\
+        {\
+            SC_next_victim = frm_queue[SC_next_victim].frq_next;\
+        }\
+        frm_queue[(prevfrn)].frq_next = frm_queue[toRmv].frq_next;\
+        frm_queue[toRmv].frq_next = -1;\
+    }
 
-
+#define mv_to_nxt_SC_victim()\
+    SC_next_victim = frm_queue[SC_next_victim].frq_next;

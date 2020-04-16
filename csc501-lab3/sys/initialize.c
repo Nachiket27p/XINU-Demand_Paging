@@ -50,7 +50,7 @@ int	console_dev;		/* the console device			*/
 /*  added for the demand paging */
 bs_map_t bsm_tab[NBS];
 fr_map_t frm_tab[NFRAMES];
-fr_q_node frm_queue[NFRAMES + 2];
+fr_q_node frm_queue[NFRAMES];
 int debugging = 0;
 int page_replace_policy = SC;
 

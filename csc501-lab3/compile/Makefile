@@ -478,7 +478,7 @@ kputc.o: ../sys/kputc.c /usr/include/stdc-predef.h ../h/conf.h \
  ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/tty.h
 main.o: ../sys/main.c /usr/include/stdc-predef.h ../h/conf.h \
  ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/proc.h ../h/stdio.h \
- ../h/paging.h
+ ../h/paging.h ../h/frm_q.h
 mark.o: ../sys/mark.c /usr/include/stdc-predef.h ../h/conf.h \
  ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/mark.h
 mkpool.o: ../sys/mkpool.c /usr/include/stdc-predef.h ../h/conf.h \

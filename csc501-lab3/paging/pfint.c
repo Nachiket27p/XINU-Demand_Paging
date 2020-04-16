@@ -87,7 +87,7 @@ SYSCALL pfint()
 
 		if(page_replace_policy == SC)
 		{
-			insert_frm_q(newFr);
+			frmq_insert(newFr);
 		}
 		else if(page_replace_policy == LFU)
 		{

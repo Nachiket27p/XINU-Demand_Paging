@@ -3,6 +3,7 @@
 #include <proc.h>
 #include <stdio.h>
 #include <paging.h>
+#include <frm_q.h>
 
 
 #define PROC1_VADDR	0x40000000
@@ -68,9 +69,81 @@ void proc1_test3(char *msg, int lck) {
 
 	return;
 }
+int SC_next_victim;
+void printfrmq()
+{
+	if(frmq_isEmpty())
+	{
+		kprintf("\nQueue is Empty!\n\n");
+		return;
+	}
+
+	kprintf("head: %d\n", frm_q_head);
+	kprintf("tail: %d\n", frm_q_tail);
+	kprintf("SC Next: %d\n", SC_next_victim);
+
+	int curr = frm_q_head;
+	while(curr != frm_q_tail)
+	{
+		kprintf("%d --> ", curr);
+		curr = frmq_next_id(curr);
+	}
+	kprintf("%d --> ", curr);
+	kprintf("%d\n\n", frmq_next_id(curr));
+}
+
+void test_frmq()
+{
+	printfrmq();
+
+	frmq_insert(15);
+
+	printfrmq();
+
+	frmq_insert(20);
+	
+	printfrmq();
+
+	frmq_insert(210);
+
+	printfrmq();
+
+	mv_to_nxt_SC_victim();
+
+	printfrmq();
+
+	frmq_insert(270);
+
+	printfrmq();
+
+	frmq_remove(frm_q_head);
+
+	printfrmq();
+
+	mv_to_nxt_SC_victim();
+	mv_to_nxt_SC_victim();
+
+	printfrmq();
+
+	frmq_remove(frm_q_tail);
+
+	printfrmq();
+
+	mv_to_nxt_SC_victim();
+	frmq_remove(frm_q_head);
+
+	printfrmq();
+
+	frmq_remove(frm_q_head);
+
+	printfrmq();
+}
 
 int main()
 {
+
+	// test_frmq();
+
 	int pid1;
 	int pid2;
 
