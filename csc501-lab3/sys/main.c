@@ -80,6 +80,7 @@ void printfrmq()
 
 	kprintf("head: %d\n", frm_q_head);
 	kprintf("tail: %d\n", frm_q_tail);
+	kprintf("SC Next: %d\n", SC_next_victim);
 
 	int curr = frm_q_head;
 	while(curr != frm_q_tail)
@@ -107,6 +108,10 @@ void test_frmq()
 
 	printfrmq();
 
+	mv_to_nxt_SC_victim();
+
+	printfrmq();
+
 	frmq_insert(270);
 
 	printfrmq();
@@ -115,10 +120,16 @@ void test_frmq()
 
 	printfrmq();
 
+	mv_to_nxt_SC_victim();
+	mv_to_nxt_SC_victim();
+
+	printfrmq();
+
 	frmq_remove(frm_q_tail);
 
 	printfrmq();
 
+	mv_to_nxt_SC_victim();
 	frmq_remove(frm_q_head);
 
 	printfrmq();
@@ -131,26 +142,26 @@ void test_frmq()
 int main()
 {
 
-	test_frmq();
+	// test_frmq();
 
-	// int pid1;
-	// int pid2;
+	int pid1;
+	int pid2;
 
-	// kprintf("\n1: shared memory\n");
-	// pid1 = create(proc1_test1, 2000, 20, "proc1_test1", 0, NULL);
-	// resume(pid1);
-	// sleep(10);
+	kprintf("\n1: shared memory\n");
+	pid1 = create(proc1_test1, 2000, 20, "proc1_test1", 0, NULL);
+	resume(pid1);
+	sleep(10);
 
-	// kprintf("\n2: vgetmem/vfreemem\n");
-	// pid1 = vcreate(proc1_test2, 2000, 100, 20, "proc1_test2", 0, NULL);
-	// kprintf("pid %d has private heap\n", pid1);
-	// resume(pid1);
-	// sleep(3);
+	kprintf("\n2: vgetmem/vfreemem\n");
+	pid1 = vcreate(proc1_test2, 2000, 100, 20, "proc1_test2", 0, NULL);
+	kprintf("pid %d has private heap\n", pid1);
+	resume(pid1);
+	sleep(3);
 
-	// kprintf("\n3: Frame test\n");
-	// pid1 = create(proc1_test3, 2000, 20, "proc1_test3", 0, NULL);
-	// resume(pid1);
-	// sleep(3);
+	kprintf("\n3: Frame test\n");
+	pid1 = create(proc1_test3, 2000, 20, "proc1_test3", 0, NULL);
+	resume(pid1);
+	sleep(3);
 
 	return 0;
 }
