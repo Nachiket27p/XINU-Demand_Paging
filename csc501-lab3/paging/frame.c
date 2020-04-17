@@ -9,9 +9,8 @@ LOCAL SYSCALL sc_replacement_policy();
 LOCAL SYSCALL lfu_replacement_policy();
 SYSCALL free_frm(int i);
 
-int SC_next_victim;
 int frm_q_head;
-// int frm_q_tail;
+int frm_q_tail;
 
 /*-------------------------------------------------------------------------
  * init_frm - initialize frm_tab
@@ -122,21 +121,6 @@ SYSCALL free_frm(int i)
 		pdptr = pdbr + (pdOffset * sizeof(pd_t));
 		ptptr = (pdptr->pd_base * NBPG) + (ptOffset * sizeof(pt_t));
 
-        // // locate the correct backing store for this frame so if it needs to be written back
-        // // to the backing store its written to the correct backin store because 
-        // // a process can have multiple multiple backing stores
-        // for(bStore = 0; bStore < NBS; bStore++)
-        // {
-        //     if(((proctab[frptr->fr_pid].store >> bStore) & (u_int)1) &&
-        //         (frptr->fr_vpno >= bsm_tab[bStore].bs_vpno &&
-        //             frptr->fr_vpno < (bsm_tab[bStore].bs_vpno + BACKING_STORE_UNIT_SIZE) ))
-        //     {
-        //         break;
-        //     }
-        // }
-		// // bStore = proctab[frptr->fr_pid].store;
-        // pn = frptr->fr_vpno - proctab[fppid].vhpno;
-
         // use bsm_lookup to get the correct backins store and the pageth
         bsm_lookup(currpid, virtAddr, &bStore, &pn);
 		
@@ -164,14 +148,6 @@ SYSCALL free_frm(int i)
 		
 		if(frptr->fr_refcnt == 0)
 		{
-            // if(page_replace_policy == LFU)
-            // {
-            //     // do nothing?
-            // }
-            // else if(page_replace_policy == SC)
-            // {
-            //     // do nothing?
-            // }
 			frptr->fr_pid = NOVAL;
 			frptr->fr_status = FRM_UNMAPPED;
 			frptr->fr_type = FR_PAGE;
@@ -211,11 +187,20 @@ LOCAL SYSCALL sc_replacement_policy()
     pd_t *pdptr;
 	pt_t *ptptr;
 
+    // get the head of the frame queue because SC policy is implemented
+    // based on FIFOreplacement with a second chance
+    int currFN = frm_q_head;
+
+    // get the frame behind the head which is the tail pointer
+    // !!( Refer to 'frm_q.h - frmq_remove()' to see why previous is required.)!!
+    int prevFN = frm_q_tail;
+
     // keep looking for a frame from the frame queue
     while(frameNumb == -1)
     {
+        kprintf("OK");
         // get the frame virtual page number
-        frVpno = frm_tab[SC_next_victim].fr_vpno;
+        frVpno = frm_tab[currFN].fr_vpno;
 
         // cast the address of the frame number to the struct virt_addr_t
         // so that the page table offset and page directory offset can be
@@ -235,7 +220,7 @@ LOCAL SYSCALL sc_replacement_policy()
         if(ptptr->pt_acc == 0)
         {
             // set frame number to break out of the loop and return
-            frameNumb = SC_next_victim;
+            frameNumb = currFN;
             // if debugging is turned on than print the replaced frame
             if(debugging)
             {
@@ -247,11 +232,18 @@ LOCAL SYSCALL sc_replacement_policy()
             // pt_acc is 1 that means the page has been references
             // clear the reference so that next time it can be replaced
             ptptr->pt_acc = 0;
+
+            // update the previous and current such that when the loop
+            // breaks the prev points to frame before the one which is to
+            // be removed.
+            // !!( Refer to 'frm_q.h - frmq_remove()' to see why previous is required.)!!
+            prevFN = currFN;
+            currFN = frmq_next_id(currFN);
         }
 
-        // move the next victim pointer along the circular queue
-        mv_to_nxt_SC_victim();
     }
+
+    frmq_remove(prevFN);
 
     restore(ps);
     return frameNumb;

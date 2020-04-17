@@ -9,7 +9,6 @@ typedef struct {
 extern fr_q_node frm_queue[];
 extern int frm_q_head;
 extern int frm_q_tail;
-extern int SC_next_victim;
 
 void init_frm_q();
 
@@ -31,7 +30,6 @@ void init_frm_q();
         frm_q_head = (fn);\
         frm_q_tail = (fn);\
         frm_queue[(fn)].frq_next = (fn);\
-        SC_next_victim = (fn);\
     }\
     else\
     {\
@@ -41,16 +39,17 @@ void init_frm_q();
     }
 
 /*
- * Removes teh frame (frm) from the queue
- * frn - the frame id which needs to be removed from the queue
- * fn - the variable in which the removed frame id will be stored
+ * Removes the frame after prevfrn from the queue because this is
+ * singly linked list this is done to provide O(1) removal times.
+ * prevfrn - the frame id before the one wanting to be removed
+ * e.g: 0 -> 3 -> 5 -> 15 -> 2
+ * To remove '5' provide prevfrn = '3'
  */
 #define frmq_remove(prevfrn)\
     if(frm_queue[(prevfrn)].frq_next == (prevfrn))\
     {\
         frm_q_head = -1;\
         frm_q_tail = -1;\
-        SC_next_victim = -1;\
     }\
     else\
     {\
@@ -63,13 +62,7 @@ void init_frm_q();
         {\
             frm_q_tail = frm_queue[toRmv].frq_next;\
         }\
-        if(toRmv == SC_next_victim)\
-        {\
-            SC_next_victim = frm_queue[SC_next_victim].frq_next;\
-        }\
         frm_queue[(prevfrn)].frq_next = frm_queue[toRmv].frq_next;\
         frm_queue[toRmv].frq_next = -1;\
     }
 
-#define mv_to_nxt_SC_victim()\
-    SC_next_victim = frm_queue[SC_next_victim].frq_next;
