@@ -47,16 +47,17 @@ SYSCALL get_frm(int* avail)
 {
   	STATWORD ps;
   	disable(ps);
-  	int i = 0;
+  	int i;
 
   	// check if a frame is available if so return it
-  	while(i < NFRAMES){
-  		if(frm_tab[i].fr_status == FRM_UNMAPPED){
+    for(i = 0; i < NFRAMES; i++)
+    {
+  		if(frm_tab[i].fr_status == FRM_UNMAPPED)
+        {
   			*avail = i;
   			restore(ps);
   			return OK;
   		}
-  		i++;
   	}
 
 	int frameNumb;

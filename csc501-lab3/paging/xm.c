@@ -39,8 +39,7 @@ SYSCALL xmunmap(int virtpage)
     STATWORD ps;
     disable(ps);
     bsm_tab[currpid].bs_pid_track &= (!((u_llong)1 << currpid));
-    SYSCALL rtn = OK;
-    rtn = bsm_unmap(currpid, virtpage, 0);
+    SYSCALL rtn = bsm_unmap(currpid, virtpage, 0);
 
     restore(ps);
     return rtn;

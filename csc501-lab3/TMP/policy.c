@@ -14,7 +14,7 @@ SYSCALL srpolicy(int policy)
 {
   /* sanity check ! */
 
-  debugging = 1;
+    debugging = 1;
 	page_replace_policy = policy;
 	return OK;
 }

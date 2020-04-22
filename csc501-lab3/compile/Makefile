@@ -574,6 +574,45 @@ write.o: ../sys/write.c /usr/include/stdc-predef.h ../h/conf.h \
  ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/io.h
 xdone.o: ../sys/xdone.c /usr/include/stdc-predef.h ../h/kernel.h \
  ../h/systypes.h ../h/conf.h ../h/mem.h ../h/stdio.h
+bsm.o: ../TMP/bsm.c /usr/include/stdc-predef.h ../h/conf.h ../h/kernel.h \
+ ../h/systypes.h ../h/mem.h ../h/paging.h ../h/proc.h
+control_reg.o: ../TMP/control_reg.c /usr/include/stdc-predef.h \
+ ../h/conf.h ../h/kernel.h ../h/systypes.h ../h/mem.h
+dump32.o: ../TMP/dump32.c /usr/include/stdc-predef.h ../h/conf.h \
+ ../h/kernel.h ../h/systypes.h ../h/mem.h
+frame.o: ../TMP/frame.c /usr/include/stdc-predef.h ../h/conf.h \
+ ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/proc.h ../h/paging.h \
+ ../h/frm_q.h
+frm_q.o: ../TMP/frm_q.c /usr/include/stdc-predef.h ../h/conf.h \
+ ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/paging.h ../h/frm_q.h
+get_bs.o: ../TMP/get_bs.c /usr/include/stdc-predef.h ../h/conf.h \
+ ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/proc.h ../h/paging.h
+init.o: ../TMP/init.c /usr/include/stdc-predef.h ../h/conf.h \
+ ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/io.h
+pd_alloc.o: ../TMP/pd_alloc.c /usr/include/stdc-predef.h ../h/conf.h \
+ ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/proc.h ../h/paging.h
+pfint.o: ../TMP/pfint.c /usr/include/stdc-predef.h ../h/conf.h \
+ ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/paging.h ../h/proc.h \
+ ../h/frm_q.h
+policy.o: ../TMP/policy.c /usr/include/stdc-predef.h ../h/conf.h \
+ ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/paging.h
+read_bs.o: ../TMP/read_bs.c /usr/include/stdc-predef.h ../h/conf.h \
+ ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/mark.h ../h/bufpool.h \
+ ../h/proc.h ../h/paging.h
+release_bs.o: ../TMP/release_bs.c /usr/include/stdc-predef.h ../h/conf.h \
+ ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/proc.h ../h/paging.h
+vcreate.o: ../TMP/vcreate.c /usr/include/stdc-predef.h ../h/conf.h \
+ ../h/i386.h ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/proc.h \
+ ../h/sem.h ../h/io.h ../h/paging.h
+vfreemem.o: ../TMP/vfreemem.c /usr/include/stdc-predef.h ../h/conf.h \
+ ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/proc.h ../h/paging.h
+vgetmem.o: ../TMP/vgetmem.c /usr/include/stdc-predef.h ../h/conf.h \
+ ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/proc.h ../h/paging.h
+write_bs.o: ../TMP/write_bs.c /usr/include/stdc-predef.h ../h/conf.h \
+ ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/proc.h ../h/mark.h \
+ ../h/bufpool.h ../h/paging.h
+xm.o: ../TMP/xm.c /usr/include/stdc-predef.h ../h/conf.h ../h/kernel.h \
+ ../h/systypes.h ../h/mem.h ../h/proc.h ../h/paging.h
 ttyalloc.o: ../tty/ttyalloc.c /usr/include/stdc-predef.h ../h/conf.h \
  ../h/kernel.h ../h/systypes.h ../h/mem.h ../h/tty.h ../h/stdio.h
 ttycntl.o: ../tty/ttycntl.c /usr/include/stdc-predef.h ../h/conf.h \
